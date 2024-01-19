@@ -1,4 +1,5 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+import urllib.parse
 
 token = "6413387680:AAGREejqioV_S595JCu_NnGiWriGxbQM5FU"
 
@@ -22,6 +23,7 @@ If you get to whitelist here will appear the sale
 welcome_message = "Welcome to Glass Punks Whitelist bot!"
 subscription_check_message = "Subscribe to @glasspunks and <a href=\"t.me/GlassPunksCommunity\">@GlassPunksCommunity</a> to join the whitelist bot!"
 not_subscribed_message = "You are not subscribed! Please make sure to follow <a href=\"t.me/GlassPunksCommunity\">@GlassPunksCommunity</a>"
+restart_message = "You have already joined the whitelist competition!"
 buying_text = "Choose currency"
 presale_loading_message = "Your balance: <b>... NFT</b>.\n\nAvailable <b>... from ... NFT.</b>"
 admin_panel_text = "Admin panel"
@@ -32,6 +34,19 @@ admin_message_button_title_question = "Send me the button label"
 admin_message_button_url_question = "Send me the button url"
 admin_message_confirmation_send_text = "Send the message?"
 messages_sent_text = "Messages sent!"
+
+
+def get_share_message_text(user_id: int) -> str:
+    return f'''💎 Join Glass Punks Whitelist Competition and Earn
+
+Glass Punks - a conceptual NFT art on TON. 
+What you get?
+
+- 🤑 Get access to Glass Punks pre-sale with discounted price
+- 💰 Earn 10%, if your referral buys NFT
+
+👉 https://t.me/whitelist_testbot?start={user_id}
+'''
 
 
 def get_referral_link_message_text(user_id: int) -> str:
@@ -47,11 +62,11 @@ What you get?
 <b><a href="https://t.me/whitelist_testbot?start={user_id}">JOIN</a></b>'''
 
 
-def get_presale_text(nft_balance, total_nft, total_nft_bought) -> str:
+def get_presale_text(nft_balance: int, total_nft: int, total_nft_bought: int) -> str:
     return f"Your balance: <b>{nft_balance} NFT</b>.\n\nAvailable <b>{total_nft - total_nft_bought} from {total_nft} NFT.</b>"
 
 
-def get_menu_text(rank, referees, user_id) -> str:
+def get_menu_text(rank: int, referees: int, user_id: int) -> str:
     return f'''
 <b><u>Congratulations! You joined Glass Punks whitelist competition.</u></b>
 
@@ -65,15 +80,15 @@ def get_menu_text(rank, referees, user_id) -> str:
 2. 💰 <b>Get 10% of NFT price</b>, If your referral buys <b>NFT</b>   
 
 
-<code>Your place in the whitelist: {rank}</code>
-<code>People invited: {referees}</code>
+Your place in the whitelist: {rank}
+People invited: {referees}
 
-<b><a href="https://t.me/whitelist_testbot?start={user_id}">Your Referral Link</a></b>'''
+<b>Your Referral Link:</b> <code><b>https://t.me/whitelist_testbot?start={user_id}</b></code>'''
 
 
-def get_ref_dashboard_text(referees, user_id) -> str:
+def get_ref_dashboard_text(referees: int, user_id: int) -> str:
     return f'''
-<code>People invited:  {referees}</code>
+People invited:  {referees}
 
 
 1. Invite people using your referral link - increase your score to move up in the participants table - <b>TOP members will access pre-sale with discounted prices</b>
@@ -81,10 +96,11 @@ def get_ref_dashboard_text(referees, user_id) -> str:
 
 2. <b>Get 10% of NFT cost</b>, if person you invited buys it    
 
-<b><a href="https://t.me/whitelist_testbot?start={user_id}">Your Referral Link</a></b>'''
+<b>Your Referral Link:</b> <code><b>https://t.me/whitelist_testbot?start={user_id}</b></code>'''
 
 
-def get_admin_statistics_text(total_users, total_users_subscribed, total_nft_bought, total_nft) -> str:
+def get_admin_statistics_text(total_users: int, total_users_subscribed: int, total_nft_bought: int,
+                              total_nft: int) -> str:
     return f'''Statistics:
     Total users: {total_users},
     Total users subscribed: {total_users_subscribed},
@@ -106,10 +122,10 @@ def get_subscription_check_keyboard() -> InlineKeyboardMarkup:
     ]])
 
 
-def get_menu_keyboard() -> InlineKeyboardMarkup:
+def get_menu_keyboard(user_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup([
         [InlineKeyboardButton('Share Referral Link',
-                              switch_inline_query="Share Referral Link")],
+                              url=f"https://t.me/share/url?url= &text={urllib.parse.quote(get_share_message_text(user_id))}")],
         [InlineKeyboardButton('Referral Dashboard', callback_data="ref_dashboard")],
         [InlineKeyboardButton('Whitelist Pre-Sale', callback_data="whitelist_presale")]
     ])

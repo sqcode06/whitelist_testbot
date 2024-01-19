@@ -144,8 +144,14 @@ def get_nft_status() -> tuple[int, int]:
 
 async def show_menu(update: Update, context: ContextTypes.DEFAULT_TYPE, message_id: int) -> None:
     global database, db_columns
+    user_id = update.effective_user.id
     await context.bot.deleteMessage(chat_id=update.effective_chat.id, message_id=message_id)
-    await menu(update, context)
+    await context.bot.sendPhoto(
+        caption=structures.get_menu_text(get_rank(user_id, False), get_referee_number(user_id), user_id),
+        photo="https://i.imgur.com/dPIBptY.jpg",
+        chat_id=update.effective_chat.id,
+        reply_markup=structures.get_menu_keyboard(user_id),
+        parse_mode=ParseMode.HTML)
 
 
 async def show_presale_message(update: Update, context: ContextTypes.DEFAULT_TYPE, message_id: int) -> None:
@@ -166,16 +172,6 @@ async def show_admin_panel(update: Update, context: ContextTypes.DEFAULT_TYPE, m
         reply_markup=structures.get_admin_panel_keyboard(),
         parse_mode=ParseMode.HTML
     )
-
-
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user_id = update.effective_user.id
-    await context.bot.sendPhoto(
-        caption=structures.get_menu_text(get_rank(user_id, False), get_referee_number(user_id), user_id),
-        photo="https://i.imgur.com/dPIBptY.jpg",
-        chat_id=update.effective_chat.id,
-        reply_markup=structures.get_menu_keyboard(),
-        parse_mode=ParseMode.HTML)
 
 
 async def presale_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -223,10 +219,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         database.insert(presale_table, {db_columns_presale[0]: update.effective_chat.id,
                                         db_columns_presale[1]: 0})
 
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=structures.welcome_message)
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=structures.subscription_check_message,
-                                   reply_markup=structures.get_subscription_check_keyboard(),
-                                   parse_mode=ParseMode.HTML)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=structures.welcome_message)
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=structures.subscription_check_message,
+                                       reply_markup=structures.get_subscription_check_keyboard(),
+                                       parse_mode=ParseMode.HTML)
+    else:
+        await context.bot.send_message(chat_id=update.effective_chat.id, text=structures.restart_message,
+                                       reply_markup=structures.get_return_to_menu_keyboard())
 
 
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -426,17 +425,13 @@ if __name__ == '__main__':
     # database.insert(presale_table, {db_columns_presale[0]: -1, db_columns_presale[1]: 2500})
 
     start_handler = CommandHandler('start', start)
-    menu_handler = CommandHandler('menu', menu)
     admin_handler = CommandHandler('admin', admin_panel)
     #   DEBUG_presale_handler = CommandHandler('presale', presale_message)
     custom_message_handler = MessageHandler(~filters.COMMAND, message_handler)
-    inline_mode_handler = InlineQueryHandler(inline_handler)
     application.add_handler(start_handler)
-    application.add_handler(menu_handler)
     #   application.add_handler(DEBUG_presale_handler)
     application.add_handler(admin_handler)
     application.add_handler(custom_message_handler)
-    application.add_handler(inline_mode_handler)
     application.add_handler(CallbackQueryHandler(callback_handler))
 
     application.run_polling()
